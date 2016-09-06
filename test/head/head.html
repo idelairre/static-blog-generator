@@ -1,0 +1,19 @@
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{#if page.title}}{{ page.title }}{{ else }}{{ site.title }}{{/if}}</title>
+
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="{{#if page.excerpt}}{{else}}{{ site.description }}{{/if}}">
+
+    {{#if page.image}}<meta name="thumbnail" content="{{ site.baseurl }}{{ page.image }}" />{{/if}}
+
+
+    <link rel="canonical" href="{{ page.url }}">
+    <link rel="icon" type="image/png" href="/images/lambda-xl.png">
+
+    <!-- Custom CSS -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="./css/syntax.css">
+    <link rel="stylesheet" href="./css/lambda.css">
+</head>

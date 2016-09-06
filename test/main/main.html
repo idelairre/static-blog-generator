@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  {{> head }}
+
+  <body>
+    <div class="wrapper">
+    {{> header }}
+
+    <div id="content">
+      <div id="article">
+        <div class="article-list">
+          {{{ content }}}
+        </div>
+      </div>
+    </div>
+    {{> footer }}
+  </div>
+  </body>
+</html>
