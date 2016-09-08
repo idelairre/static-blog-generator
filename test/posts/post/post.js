@@ -9,7 +9,6 @@ const Post = View.extend({
 	template: template(path.join(__dirname, './post.html')),
 	initialize(post) {
 		this.post = post;
-		this.post.atPost = true;
 	},
 	compile() {
 		return this.template({

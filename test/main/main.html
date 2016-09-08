@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
   {{> head }}
-
   <body>
     <div class="wrapper">
     {{> header }}
-
     <div id="content">
       <div id="article">
         <div class="article-list">
@@ -16,4 +14,7 @@
     {{> footer }}
   </div>
   </body>
+  <script>
+    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+  </script>
 </html>

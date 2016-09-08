@@ -7,6 +7,7 @@ const site = {
 	description: 'Blog for web development, computer science, and sometimes philosophy.',
 	github_repo: 'https://github.com/idelairre/idelairre.github.io',
 	disqus: 'idelairre',
+	disqus_shortname: 'idelairre',
 	pages: [
 		{ title: 'About', url: 'about'},
 		{ title: 'Portfolio', url: 'portfolio'},

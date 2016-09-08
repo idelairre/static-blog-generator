@@ -11,7 +11,7 @@ import Posts from './posts/posts';
 import Head from './head/head';
 import Header from './header/header';
 import Main from './main/main';
-import { readFile, parseMetaData, parsePosts, template } from './helpers';
+import { getDir, readFile, parseMetaData, parsePosts, template } from './helpers';
 import site from './config';
 
 const copyCss = filepath => {
@@ -27,11 +27,8 @@ const copyAssets = () => {
 	copyImages('./images');
 }
 
-
 new Disqus().compile();
 new DisqusComments().compile();
-
-const posts = parsePosts('./posts/_posts');
 
 // fs.writeFile('./posts/posts.json', JSON.stringify(posts));
 
@@ -46,7 +43,7 @@ Fox.configure({
 
 const compiler = Compiler.extend({
 	data: {
-		posts: posts.reverse()
+		posts: parsePosts('./posts/_posts').reverse()
 	},
 	routes: {
 		'/': 'index',
@@ -54,17 +51,29 @@ const compiler = Compiler.extend({
 		'/about': 'about',
 		'/portfolio': 'portfolio'
 	},
-	compile() {
-		Object.keys(this.routes).forEach(key => {
-			if (this.routes[key] === 'post') {
-				this.data.posts.forEach(post => {
-					post.content = post.html;
-					fs.writeFileSync(`${Fox.output}/${kebabCase(post.title)}.html`, this[this.routes[key]](post), 'utf8');
-				});
-			} else {
+	compile(buildPath) {
+		copyAssets();
+		if (!buildPath || getDir(buildPath) === path.parse(__dirname).base) {
+			Object.keys(this.routes).forEach(key => {
+				if (this.routes[key] === 'post') {
+					this.data.posts.forEach(post => {
+						post.content = post.html;
+						post.atPost = true;
+						fs.writeFileSync(`${Fox.output}/${kebabCase(post.title)}.html`, this[this.routes[key]](post), 'utf8');
+					});
+				} else {
+					fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
+				}
+			});
+		} else if (path.parse(buildPath).dir !== path.parse(__dirname).dir) {
+			const pathSep = path.parse(buildPath).dir.split(path.sep);
+			const key = `/${pathSep[pathSep.length - 1]}`;
+			console.log('[STATIC FOX] checking route: ', key, this.routes);
+			if (this.routes[key]) {
 				fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
+				console.log('[STATIC FOX] building route: ', key);
 			}
-		});
+		}
 	},
 	about() {
 		const page = parseMetaData(readFile(path.join(__dirname, './about/about.markdown')));
@@ -74,16 +83,16 @@ const compiler = Compiler.extend({
 		return new Main(content).compile();
 	},
 	index() {
-		const postViews = new Posts(posts);
+		const postViews = new Posts(this.data.posts);
 		const content = Object.assign({ site }, {
 			content: postViews.compile()
 		});
 		return new Main(content).compile();
 	},
 	portfolio() {
-		const page = parseMetaData(readFile(path.join(__dirname, './portfolio/portfolio.markdown')));
+		const page = parseMetaData(readFile(path.join(__dirname, './portfolio/portfolio.html')));
 		const content = Object.assign({ site }, {
-			content: template(path.join(__dirname, './portfolio/portfolio.markdown'))
+			content: template(path.join(__dirname, './portfolio/portfolio.html'))
 		});
 		return new Main(content).compile();
 	},
@@ -99,6 +108,6 @@ const compiler = Compiler.extend({
 	}
 });
 
-new compiler();
+const compilerInst = new compiler();
 
-copyAssets();
+export default compilerInst;
