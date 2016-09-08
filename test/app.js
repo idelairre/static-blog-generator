@@ -84,14 +84,15 @@ const compiler = Compiler.extend({
 	},
 	index() {
 		const postViews = new Posts(this.data.posts);
-		const content = Object.assign({ site }, {
+		const page = { title: '' };
+		const content = Object.assign({ site }, { page }, {
 			content: postViews.compile()
 		});
 		return new Main(content).compile();
 	},
 	portfolio() {
 		const page = parseMetaData(readFile(path.join(__dirname, './portfolio/portfolio.html')));
-		const content = Object.assign({ site }, {
+		const content = Object.assign({ site }, { page }, {
 			content: template(path.join(__dirname, './portfolio/portfolio.html'))
 		});
 		return new Main(content).compile();

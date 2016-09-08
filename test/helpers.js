@@ -19,22 +19,28 @@ export const getDir = filepath => {
 }
 
 export const template = function(filepath) {
-		const name = path.parse(filepath).name;
-		const ext = path.parse(filepath).ext;
-		const templ = ext.includes('html') ? readFile(filepath) : compile(readFile(filepath).replace(/---([\s\S]*)---/m, ''));
-		return Handlebars.compile(templ);
+	const name = path.parse(filepath).name;
+	const ext = path.parse(filepath).ext;
+	const templ = ext.includes('html') ? readFile(filepath).replace(/---([\s\S]*)---/m, '') : compile(readFile(filepath).replace(/---([\s\S]*)---/m, ''));
+	return Handlebars.compile(templ);
 }
 
 export const parseMetaData = post => {
+	let data;
 	const json = {};
-	let data = post.match(/---([\s\S]*)---/m)[0].replace(/---/g, '');
-	data = data.split('\n').map(item => {
-		const splitLine = item.split(':');
-		const key = splitLine[0].trim();
-		if (key !== '') {
-			json[key] = item.replace(new RegExp(`${key}:`), '').replace(/"/g, '').trim();
-		}
-	});
+	const match = post.match(/---([\s\S]*)---/m);
+	if (match) {
+		data = match[0].replace(/---/g, '');
+	}
+	if (data) {
+		data = data.split('\n').map(item => {
+			const splitLine = item.split(':');
+			const key = splitLine[0].trim();
+			if (key !== '') {
+				json[key] = item.replace(new RegExp(`${key}:`), '').replace(/"/g, '').trim();
+			}
+		});
+	}
 	return json;
 }
 

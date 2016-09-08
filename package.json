@@ -14,6 +14,7 @@
     "babel-cli": "^6.14.0",
     "fs-extra": "^0.30.0",
     "handlebars": "^4.0.5",
+    "handlebars-helpers": "^0.7.5",
     "he": "^1.1.0",
     "lodash": "^4.15.0",
     "marked": "^0.3.6"
@@ -26,7 +27,15 @@
     "babel-preset-stage-0": "^6.5.0",
     "chokidar": "^1.6.0",
     "connect": "^3.4.1",
+    "del": "^2.2.2",
+    "gh-pages-deploy": "^0.4.2",
+    "gulp": "^3.9.1",
+    "gulp-copy": "0.0.2",
+    "gulp-deploy-git": "^0.5.3",
+    "gulp-sequence": "^0.4.6",
     "livereload": "^0.5.0",
+    "require-dir": "^0.3.0",
+    "rfc822-date": "git+https://github.com/tjconcept/js-rfc822-date.git",
     "serve-static": "^1.11.1"
   }
 }

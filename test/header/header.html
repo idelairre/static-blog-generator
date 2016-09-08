@@ -4,11 +4,11 @@
     <a href="/">{{ site.title }}</a>
   </div>
   <div class="links">
-  <a href="/" class="page-link active">Blog</a> <!-- this will have to change -->
+  <a href="/" class="page-link {{#is page.title ''}}active{{/is}}">Blog</a>
   {{#each site.pages}}
-    <a class="page-link active" href="{{ this.url }}">{{ this.title }}</a>
+    <a class="page-link {{#is this.title ../page.title }}active{{/is}}" href="{{ this.url }}">{{ this.title }}</a>
   {{/each}}
-  <a href="/feed.xml" target="_blank" class="page-link">RSS</a>
+  <!-- <a href="/feed.xml" target="_blank" class="page-link">RSS</a> -->
   <a href="{{ site.github_repo }}" target="_blank" class="page-link github-link">
     <img src="/images/github-repo.png" alt="Github Repository">Source</a>
   </div>

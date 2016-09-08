@@ -38,6 +38,8 @@ watcher.on('change', (filePath, stats) => {
 });
 
 const lr = livereload.createServer();
+
 lr.watch(`${__dirname}/dist`);
+
 server();
 compiler.compile();

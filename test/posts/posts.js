@@ -11,6 +11,7 @@ const Posts = CollectionView.extend({
 	initialize(posts) {
 		Handlebars.registerPartial('post', this.item.prototype.template);
 		this.posts = posts.map(post => {
+			post.atPost = false;
 			post.content = post.excerpt;
 			return post;
 		});
