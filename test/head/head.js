@@ -5,8 +5,7 @@ import path from 'path';
 
 const Head = View.extend({
   template: template(path.join(__dirname, './head.html')),
-  initialize(site) {
-    this.site = site;
+  initialize() {
     Handlebars.registerPartial('head', this.template);
   },
   compile() {
@@ -14,4 +13,4 @@ const Head = View.extend({
   }
 });
 
-export default Head;
+export default new Head().compile();

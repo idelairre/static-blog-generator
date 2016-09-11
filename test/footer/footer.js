@@ -5,8 +5,7 @@ import path from 'path';
 
 const Footer = View.extend({
   template: template(path.join(__dirname, './footer.html')),
-  initialize(site) {
-    this.site = site;
+  initialize() {
     Handlebars.registerPartial('footer', this.template);
   },
   compile() {
@@ -14,4 +13,4 @@ const Footer = View.extend({
   }
 });
 
-export default Footer;
+export default new Footer().compile();

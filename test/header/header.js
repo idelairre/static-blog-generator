@@ -8,8 +8,7 @@ const helpers = require('handlebars-helpers')();
 
 const Header = View.extend({
   template: template(path.join(__dirname, './header.html')),
-  initialize(site) {
-    this.site = site;
+  initialize() {
     Handlebars.registerPartial('header', this.template);
   },
   compile() {
@@ -17,4 +16,4 @@ const Header = View.extend({
   }
 });
 
-export default Header;
+export default new Header().compile();

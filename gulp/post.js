@@ -1,7 +1,6 @@
 import fs from 'fs';
 import gulp from 'gulp';
 import { argv } from 'yargs';
-import rfc822Date from 'rfc822-date';
 import config from '../test/config';
 
 const today = new Date();
@@ -13,7 +12,7 @@ gulp.task('post', cb => {
 layout: post
 author: ${config.author}
 title: "${argv.title}"
-date: ${rfc822Date(today)}
+date: ${today.toISOString()}
 comments: ${typeof argv.comments !== 'undefined' ? argv.comments : true}
 categories: ${typeof argv.categories !== 'undefined' ? argv.categories : ''}
 ---`

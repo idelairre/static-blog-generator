@@ -110,6 +110,9 @@ const Fox = {
 	CollectionView,
 	views: [],
 	output: './dist',
+	build(filepath, content) {
+		fs.writeFileSync(`${this.output}/${filepath}`, content, 'utf8');
+	},
 	configure(config) {
 		this.output = path.join(__dirname, config.output);
 		this.site = config.site;

@@ -44,17 +44,33 @@ export const parseMetaData = post => {
 	return json;
 }
 
+export const parsePost = (file, filepath) => {
+	let post;
+	if (filepath) {
+		post = fs.readFileSync(`${filepath}/${file}`, 'utf8');
+	} else {
+		post = fs.readFileSync(file, 'utf8');
+	}
+	const data = parseMetaData(post);
+	data.path = file;
+	data.url = `/${kebabCase(data.title)}`
+	data.html = he.decode(compile(post.replace(/---([\s\S]*)---/m, '')));
+	if (data.html.includes('<!-- more -->')) {
+		data.excerpt = data.html.replace(/---([\s\S]*)---/m, '').match(/([\s\S]*)<!-- more -->/m)[0].replace(/<!-- more -->/g, '');
+	}
+	return data;
+}
+
 export const parsePosts = filepath => {
 	const postsPath = path.join(__dirname, filepath);
-	const postsJson = fs.readdirSync(postsPath).map(file => {
-		const post = fs.readFileSync(`${postsPath}/${file}`, 'utf8');
-		const data = parseMetaData(post);
-		data.url = `/${kebabCase(data.title)}`
-		data.html = he.decode(compile(post.replace(/---([\s\S]*)---/m, '')));
-		if (data.html.includes('<!-- more -->')) {
-			data.excerpt = data.html.replace(/---([\s\S]*)---/m, '').match(/([\s\S]*)<!-- more -->/m)[0].replace(/<!-- more -->/g, '');
-		}
-		return data;
-	});
+	const postsJson = fs.readdirSync(postsPath).map(post => parsePost(post, postsPath));
 	return postsJson;
+}
+
+export const getPost = (name, posts) => {
+	for (let i = 0; i < posts.length; i += 1) {
+		if (posts[i].path === name) {
+			return posts[i];
+		}
+	}
 }

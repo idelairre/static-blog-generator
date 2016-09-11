@@ -14,7 +14,7 @@ const getLastCommit = callback => {
   });
 }
 
-const cmd = commit => `git add . && git commit -m "${commit.trim()}"`;
+const cmd = commit => `git add -A . && git commit -a -m "${commit.trim()} && git push origin master"`;
 
 const gitPush = commit => {
   exec(cmd(commit), {

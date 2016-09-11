@@ -1,18 +1,19 @@
 import { kebabCase } from 'lodash';
+import db from './db';
 import fs from 'fs-extra';
 import path from 'path';
 import Fox, { Compiler } from '../index';
 import Handlebars from 'handlebars';
 import Disqus from './disqus/disqus';
 import DisqusComments from './disqus/comments/disqusComments';
-import Footer from './footer/footer';
 import Post from './posts/post/post';
 import Posts from './posts/posts';
-import Head from './head/head';
-import Header from './header/header';
 import Main from './main/main';
-import { getDir, readFile, parseMetaData, parsePosts, template } from './helpers';
+import { getDir, getPost, readFile, parseMetaData, parsePost, parsePosts, template } from './helpers';
 import site from './config';
+import './footer/footer';
+import './head/head';
+import './header/header';
 
 const copyCss = filepath => {
 	fs.copySync(path.join(__dirname, filepath), './dist/css');
@@ -27,52 +28,53 @@ const copyAssets = () => {
 	copyImages('./images');
 }
 
-new Disqus().compile();
-new DisqusComments().compile();
-
-// fs.writeFile('./posts/posts.json', JSON.stringify(posts));
-
-const HeadView = new Head().compile();
-const HeaderView = new Header().compile();
-const FooterView = new Footer().compile();
-
 Fox.configure({
 	output: './dist',
 	site
 });
 
 const compiler = Compiler.extend({
-	data: {
-		posts: parsePosts('./posts/_posts').reverse()
-	},
 	routes: {
 		'/': 'index',
 		'/:post': 'post',
 		'/about': 'about',
 		'/portfolio': 'portfolio'
 	},
+	build() {
+		Object.keys(this.routes).forEach(key => {
+			if (this.routes[key] === 'post') {
+				const posts = parsePosts('./posts/_posts').reverse();
+				posts.forEach(post => {
+					post.content = post.html;
+					post.atPost = true;
+					fs.writeFileSync(`${Fox.output}/${kebabCase(post.title)}.html`, this[this.routes[key]](post), 'utf8');
+				});
+			} else {
+				fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
+			}
+		});
+	},
+	async buildPost(buildPath) {
+		const pathSep = path.parse(buildPath).dir.split(path.sep);
+		const postTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
+		const key = `/${pathSep[pathSep.length - 1]}`;
+		if (key === '/_posts') {
+			const post = parsePost(buildPath);
+			await db.update({ title: postTitle }, post, {});
+			post.content = post.html;
+			post.atPost = true;
+			Fox.build(`${kebabCase(post.title)}.html`, this.post(post));
+			Fox.build('index.html', this.index(await db.find({}).sort({ date: -1 })));
+		} else if (this.routes[key]) {
+			Fox.build(`${this.routes[key]}.html`, this[this.routes[key]]());
+		}
+	},
 	compile(buildPath) {
 		copyAssets();
-		if (!buildPath || getDir(buildPath) === path.parse(__dirname).base) {
-			Object.keys(this.routes).forEach(key => {
-				if (this.routes[key] === 'post') {
-					this.data.posts.forEach(post => {
-						post.content = post.html;
-						post.atPost = true;
-						fs.writeFileSync(`${Fox.output}/${kebabCase(post.title)}.html`, this[this.routes[key]](post), 'utf8');
-					});
-				} else {
-					fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
-				}
-			});
+		if (!buildPath || getDir(buildPath) === path.parse(__dirname).base) { // build everything
+			this.build();
 		} else if (path.parse(buildPath).dir !== path.parse(__dirname).dir) {
-			const pathSep = path.parse(buildPath).dir.split(path.sep);
-			const key = `/${pathSep[pathSep.length - 1]}`;
-			console.log('[STATIC FOX] checking route: ', key, this.routes);
-			if (this.routes[key]) {
-				fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
-				console.log('[STATIC FOX] building route: ', key);
-			}
+			this.buildPost(buildPath);
 		}
 	},
 	about() {
@@ -82,8 +84,8 @@ const compiler = Compiler.extend({
 		});
 		return new Main(content).compile();
 	},
-	index() {
-		const postViews = new Posts(this.data.posts);
+	index(posts = parsePosts('./posts/_posts').reverse()) {
+		const postViews = new Posts(posts);
 		const page = { title: '' };
 		const content = Object.assign({ site }, { page }, {
 			content: postViews.compile()

@@ -6,8 +6,10 @@ const site = {
 	url: 'https://idelairre.github.io',
 	description: 'Blog for web development, computer science, and sometimes philosophy.',
 	github_repo: 'https://github.com/idelairre/idelairre.github.io',
+	github_username: 'idelairre',
 	disqus: 'idelairre',
 	disqus_shortname: 'idelairre',
+	twitter_username: 'idelairre',
 	pages: [
 		{ title: 'About', url: 'about'},
 		{ title: 'Portfolio', url: 'portfolio'},

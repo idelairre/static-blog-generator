@@ -14,4 +14,4 @@ const Disqus = View.extend({
   }
 });
 
-export default Disqus;
+export default new Disqus().compile();
