@@ -106,12 +106,40 @@ export class Compiler {
 Compiler.extend = extend;
 
 const Fox = {
+	globber: require('glob-fs')(),
 	View,
 	CollectionView,
+	templates: [],
 	views: [],
 	output: './dist',
 	build(filepath, content) {
 		fs.writeFileSync(`${this.output}/${filepath}`, content, 'utf8');
+	},
+	compileViews() {
+		this.compileTemplates();
+		this.compileMarkdown();
+		this.templates = this.templates.filter(file => !path.parse(file).dir.match(/dist/));
+	},
+	compileTemplates() {
+		const files = this.globber.readdirSync('**/*.html', {})
+		this.templates = _.union(this.templates, files)
+	},
+	compileMarkdown() {
+		const files = this.globber.readdirSync('**/*.markdown', {});
+		this.templates = _.union(this.templates, files);
+	},
+	loadTemplate(file) {
+		if (this.templates && this.templates.length > 0) {
+			for (let i = 0; i < this.templates.length - 1; i += 1) {
+				const templ = this.templates[i];
+				if (path.parse(templ).base === file) {
+					return fs.readFileSync(templ, 'utf8');
+				}
+			}
+		} else {
+			this.compileViews();
+			return this.loadTemplate(file);
+		}
 	},
 	configure(config) {
 		this.output = path.join(__dirname, config.output);

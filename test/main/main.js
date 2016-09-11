@@ -1,10 +1,9 @@
-import { View } from '../../index';
-import { template } from '../helpers';
-import path from 'path';
+import Fox, { View } from '../../index';
+import Handlebars from 'handlebars';
 
 const Index = View.extend({
 	path: '/',
-	template: template(path.join(__dirname, './main.html')),
+	template: Handlebars.compile(Fox.loadTemplate('main.html')),
 	initialize(data) {
 		this.data = data;
 	},

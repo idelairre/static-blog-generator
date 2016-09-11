@@ -1,10 +1,9 @@
-import { View } from '../../index';
-import { template } from '../helpers';
+import Fox, { View } from '../../index';
 import Handlebars from 'handlebars';
 import path from 'path';
 
 const Disqus = View.extend({
-  template: template(path.join(__dirname, './disqus.html')),
+  template: Handlebars.compile(Fox.loadTemplate('disqus.html')),
   initialize(site) {
     this.site = site;
     Handlebars.registerPartial('disqus', this.template);

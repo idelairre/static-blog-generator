@@ -1,15 +1,13 @@
-import { View } from '../../index';
-import { template } from '../helpers';
+import Fox, { View } from '../../index';
 import Handlebars from 'handlebars';
-import path from 'path';
 
 const Head = View.extend({
-  template: template(path.join(__dirname, './head.html')),
+  template: Handlebars.compile(Fox.loadTemplate('head.html')),
   initialize() {
     Handlebars.registerPartial('head', this.template);
   },
   compile() {
-    return this.template(this.site);
+    return this.template();
   }
 });
 

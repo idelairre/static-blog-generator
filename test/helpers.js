@@ -6,10 +6,10 @@ import path from 'path';
 import Handlebars from 'handlebars';
 
 export const compile = markdown => {
-	return marked(markdown);
+	return marked(markdown.replace(/---([\s\S]*)---/m, ''))
 }
 
-export const readFile = filepath => {
+export const readFile = function(filepath) {
 	return fs.readFileSync(filepath, 'utf8');
 }
 

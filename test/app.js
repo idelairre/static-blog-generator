@@ -9,11 +9,16 @@ import DisqusComments from './disqus/comments/disqusComments';
 import Post from './posts/post/post';
 import Posts from './posts/posts';
 import Main from './main/main';
-import { getDir, getPost, readFile, parseMetaData, parsePost, parsePosts, template } from './helpers';
+import { compile, getDir, getPost, readFile, parseMetaData, parsePost, parsePosts, template } from './helpers';
 import site from './config';
 import './footer/footer';
 import './head/head';
 import './header/header';
+
+Fox.configure({
+	output: './dist',
+	site
+});
 
 const copyCss = filepath => {
 	fs.copySync(path.join(__dirname, filepath), './dist/css');
@@ -27,11 +32,6 @@ const copyAssets = () => {
 	copyCss('./css');
 	copyImages('./images');
 }
-
-Fox.configure({
-	output: './dist',
-	site
-});
 
 const compiler = Compiler.extend({
 	routes: {
@@ -47,10 +47,10 @@ const compiler = Compiler.extend({
 				posts.forEach(post => {
 					post.content = post.html;
 					post.atPost = true;
-					fs.writeFileSync(`${Fox.output}/${kebabCase(post.title)}.html`, this[this.routes[key]](post), 'utf8');
+					Fox.build(`${kebabCase(post.title)}.html`, this[this.routes[key]](post));
 				});
 			} else {
-				fs.writeFileSync(`${Fox.output}/${this.routes[key]}.html`, this[this.routes[key]](), 'utf8');
+				Fox.build(`${this.routes[key]}.html`, this[this.routes[key]]());
 			}
 		});
 	},
@@ -78,9 +78,9 @@ const compiler = Compiler.extend({
 		}
 	},
 	about() {
-		const page = parseMetaData(readFile(path.join(__dirname, './about/about.markdown')));
+		const page = parseMetaData(Fox.loadTemplate('about.markdown'));
 		const content = Object.assign({ site }, { page }, {
-			content: template(path.join(__dirname, './about/about.markdown'))
+			content: compile(Fox.loadTemplate('about.markdown'))
 		});
 		return new Main(content).compile();
 	},
@@ -93,9 +93,9 @@ const compiler = Compiler.extend({
 		return new Main(content).compile();
 	},
 	portfolio() {
-		const page = parseMetaData(readFile(path.join(__dirname, './portfolio/portfolio.html')));
+		const page = parseMetaData(Fox.loadTemplate('portfolio.html'));
 		const content = Object.assign({ site }, { page }, {
-			content: template(path.join(__dirname, './portfolio/portfolio.html'))
+			content: compile(Fox.loadTemplate('portfolio.html'))
 		});
 		return new Main(content).compile();
 	},
