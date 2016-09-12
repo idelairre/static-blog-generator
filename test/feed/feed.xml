@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xml" href="{{ site.url }}/feed.xslt.xml"?>
 <feed xmlns="https://github.com/dylang/node-rss"{{#if site.lang}} xml:lang="{{ site.lang }}"{{/if}}>
   <generator uri="https://github.com/idelairre/static-blog-generator" version="{{ site.version }}">Node RSS</generator>
   <link href="{{ page.url }}" rel="self" type="application/atom+xml" />
