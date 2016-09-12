@@ -8,6 +8,8 @@ Handlebars.registerPartial('postFooter', Fox.loadTemplate('postFooter.html'));
 const Post = View.extend({
 	template: Handlebars.compile(Fox.loadTemplate('post.html')),
 	initialize(post) {
+		post.content = post.html;
+		post.atPost = true;
 		this.post = post;
 	},
 	compile() {

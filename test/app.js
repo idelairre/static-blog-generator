@@ -16,70 +16,37 @@ import './head/head';
 import './header/header';
 
 Fox.configure({
+	debug: true,
+	input: './test',
 	output: './dist',
 	site
 });
 
-const copyCss = filepath => {
-	fs.copySync(path.join(__dirname, filepath), './dist/css');
-}
-
-const copyImages = filepath => {
-	fs.copySync(path.join(__dirname, filepath), './dist/images');
-}
-
-const copyAssets = () => {
-	copyCss('./css');
-	copyImages('./images');
-}
+const posts = parsePosts('./posts/_posts').reverse();
 
 const compiler = Compiler.extend({
+	assets: {
+		images: {
+			pattern: /\.(jpe?g|png|gif|svg)$/, path: './images'
+		}
+	},
+	collections: {
+		posts: {
+			key: 'title',
+			items: posts,
+			parser: parsePost,
+			path: './posts/_posts'
+		}
+	},
 	routes: {
 		'/': 'index',
 		'/:post': 'post',
 		'/about': 'about',
 		'/portfolio': 'portfolio'
 	},
-	build() {
-		Object.keys(this.routes).forEach(key => {
-			if (this.routes[key] === 'post') {
-				const posts = parsePosts('./posts/_posts').reverse();
-				posts.forEach(post => {
-					post.content = post.html;
-					post.atPost = true;
-					Fox.build(`${kebabCase(post.title)}.html`, this[this.routes[key]](post));
-				});
-			} else {
-				Fox.build(`${this.routes[key]}.html`, this[this.routes[key]]());
-			}
-		});
-	},
-	async buildPost(buildPath) {
-		const pathSep = path.parse(buildPath).dir.split(path.sep);
-		const postTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
-		const key = `/${pathSep[pathSep.length - 1]}`;
-		if (key === '/_posts') {
-			const post = parsePost(buildPath);
-			await db.update({ title: postTitle }, post, {});
-			post.content = post.html;
-			post.atPost = true;
-			Fox.build(`${kebabCase(post.title)}.html`, this.post(post));
-			Fox.build('index.html', this.index(await db.find({}).sort({ date: -1 })));
-		} else if (this.routes[key]) {
-			Fox.build(`${this.routes[key]}.html`, this[this.routes[key]]());
-		}
-	},
-	compile(buildPath) {
-		copyAssets();
-		if (!buildPath || getDir(buildPath) === path.parse(__dirname).base) { // build everything
-			this.build();
-		} else if (path.parse(buildPath).dir !== path.parse(__dirname).dir) {
-			this.buildPost(buildPath);
-		}
-	},
 	about() {
 		const page = parseMetaData(Fox.loadTemplate('about.markdown'));
-		const content = Object.assign({ site }, { page }, {
+		const content = Fox.content({ page }, {
 			content: compile(Fox.loadTemplate('about.markdown'))
 		});
 		return new Main(content).compile();
@@ -87,14 +54,14 @@ const compiler = Compiler.extend({
 	index(posts = parsePosts('./posts/_posts').reverse()) {
 		const postViews = new Posts(posts);
 		const page = { title: '' };
-		const content = Object.assign({ site }, { page }, {
+		const content = Fox.content({ page }, {
 			content: postViews.compile()
 		});
 		return new Main(content).compile();
 	},
 	portfolio() {
 		const page = parseMetaData(Fox.loadTemplate('portfolio.html'));
-		const content = Object.assign({ site }, { page }, {
+		const content = Fox.content({ page }, {
 			content: compile(Fox.loadTemplate('portfolio.html'))
 		});
 		return new Main(content).compile();
@@ -104,7 +71,7 @@ const compiler = Compiler.extend({
 		const page = {
 			url: `${site.url}/${kebabCase(post.title)}`
 		};
-		const content = Object.assign({ site }, { page }, {
+		const content = Fox.content({ page }, {
 			content: postView.compile()
 		});
 		return new Main(content).compile();

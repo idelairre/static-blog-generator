@@ -18,11 +18,11 @@
     "handlebars": "^4.0.5",
     "handlebars-helpers": "^0.7.5",
     "he": "^1.1.0",
+    "inflection": "^1.10.0",
+    "just-promiseify": "^1.1.1",
     "lodash": "^4.15.0",
     "marked": "^0.3.6",
-    "nedb": "^1.8.0",
-    "promiseify": "^0.2.0",
-    "require-text": "0.0.1"
+    "nedb": "^1.8.0"
   },
   "devDependencies": {
     "babel-plugin-transform-class-properties": "^6.11.5",
@@ -31,17 +31,13 @@
     "babel-preset-es2015": "^6.14.0",
     "babel-preset-stage-0": "^6.5.0",
     "chokidar": "^1.6.0",
-    "connect": "^3.4.1",
     "del": "^2.2.2",
-    "gh-pages-deploy": "^0.4.2",
     "gulp": "^3.9.1",
     "gulp-copy": "0.0.2",
-    "gulp-deploy-git": "^0.5.3",
     "gulp-sequence": "^0.4.6",
     "gulp-util": "^3.0.7",
     "livereload": "^0.5.0",
     "require-dir": "^0.3.0",
-    "rfc822-date": "git+https://github.com/tjconcept/js-rfc822-date.git",
     "serve-static": "^1.11.1"
   }
 }

@@ -1,6 +1,7 @@
 import _, { pick, kebabCase } from 'lodash';
 import Handlebars from 'handlebars';
 import fs from 'fs-extra';
+import inflection from 'inflection';
 import path from 'path';
 
 const extend = function(protoProps, staticProps) {
@@ -70,17 +71,58 @@ const pathStripper = /#.*$/;
 export class Compiler {
 	constructor(options) {
 		if (options) {
+			this.collections = options.collections;
 			this.router = options.routes;
-			this.data = options.data;
+			this.assets = options.assets;
 		}
-
+		this._copyAssets();
 		this.initialize.apply(this, arguments);
 		this.compile.apply(this, arguments);
 	}
 
 	initialize() {}
 
-	compile() {}
+	compile(buildPath) {
+		const compilerPath = path.parse(__dirname).base;
+		const compilerDir = path.parse(__dirname).dir;
+		if (!buildPath || getDir(buildPath) === compilerPath) { // if the file changed in the root directory, build everything
+			Object.keys(this.routes).forEach(route => {
+				if (!route.match(/:/)) { // its not a collection
+					Fox.log(`building route "${route}"`);
+					Fox.build(`${this.routes[route]}.html`, this[this.routes[route]]());
+				} else {
+					const collection = inflection.pluralize(route.replace(/\/:/, ''));
+					this.collections[collection].items.forEach(item => {
+						Fox.log(`building ${inflection.singularize(collection)}: "${item.title}"`);
+						Fox.build(`${kebabCase(item.title)}.html`, this[this.routes[route]](item));
+					});
+				}
+			});
+		} else if (path.parse(buildPath).dir !== compilerDir) { // otherwise check if its a collection
+			const itemTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
+			Object.keys(this.collections).forEach(collection => {
+				const collectionPath = this.collections[collection].path.replace(/./, '');
+				if (buildPath.includes(collectionPath)) {
+					const item = this.collections[collection].parser(buildPath);
+					Fox.build(`${kebabCase(item[this.collections[collection].key])}.html`, this[inflection.singularize(collection)](item));
+					Fox.build('index.html', this.index());
+				} else if (this[route]) { // if its not a collection, get the route from the filename
+					const route = path.parse(buildPath).name;
+					Fox.build(`${route}.html`, this[route]());
+				}
+			});
+		}
+	}
+
+	_copyAssets() {
+		const globber = require('glob-fs')();
+		Object.keys(this.assets).forEach(asset => {
+			const files = globber.readdirSync(`${Fox.input}/**/*`, {}).filter(file => this.assets[asset].pattern.test(file));
+			files.forEach(file => {
+				fs.copySync(file, `${Fox.outputAbsolute}/${this.assets[asset].path}/${path.parse(file).base}`)
+			});
+		});
+	}
 
 	_routeToRegExp(route) {
 		route = route.replace(escapeRegExp, '\\$&')
@@ -106,14 +148,38 @@ export class Compiler {
 Compiler.extend = extend;
 
 const Fox = {
+	css: [],
 	globber: require('glob-fs')(),
+	debug: false,
+	log(...args) {
+		args.unshift('[STATIC FOX]');
+		this.debug ? console.log.call(console, ...args) : Function.prototype;
+	},
 	View,
 	CollectionView,
 	templates: [],
 	views: [],
 	output: './dist',
+	content(...args) {
+		if (this.css.length === 0) {
+			this.compileCss();
+		}
+		return Object.assign({ site: this.site }, { css: this.css }, ...args)
+	},
 	build(filepath, content) {
-		fs.writeFileSync(`${this.output}/${filepath}`, content, 'utf8');
+		fs.writeFileSync(`${this.outputAbsolute}/${filepath}`, content, 'utf8');
+	},
+	compileCss() {
+		const files = this.globber.readdirSync('**/*.css', {}).filter(file => !path.parse(file).dir.match(/dist/) && file.match(/\.css$/));
+		files.forEach(file => {
+			fs.copySync(file, `${Fox.outputAbsolute}/css/${path.parse(file).base}`)
+		});
+		const distFiles = this.globber.readdirSync('dist/css/*.css', {}).filter(file => {
+			return !path.parse(file).dir.match(new RegExp(this.input)) && file.match(/\.css$/);
+		}).map(file => {
+			return file.replace(new RegExp(path.parse(this.output).base), '');
+		});
+		this.css = _.union(this.css, distFiles);
 	},
 	compileViews() {
 		this.compileTemplates();
@@ -142,8 +208,14 @@ const Fox = {
 		}
 	},
 	configure(config) {
-		this.output = path.join(__dirname, config.output);
+		this.input = path.parse(config.input).base;
+		this.inputAbsolute = path.join(__dirname, config.input);
+
+		this.output = config.output;
+		this.outputAbsolute = path.join(__dirname, config.output);
+
 		this.site = config.site;
+		this.debug = config.debug;
 	},
 	compile() {
 		fs.ensureDirSync(this.output);
