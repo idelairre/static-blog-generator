@@ -4,6 +4,11 @@ import fs from 'fs-extra';
 import inflection from 'inflection';
 import path from 'path';
 
+const getDir = filepath => {
+	const dirPath = path.parse(filepath).dir.split(path.sep);
+	return dirPath[dirPath.length - 1];
+}
+
 const extend = function(protoProps, staticProps) {
 	const parent = this;
 	let child;
@@ -41,14 +46,20 @@ const parsePath = (path, object) => {
 
 export class View {
 	constructor(options) {
-		if (typeof options === 'object' && typeof this.path === 'string') {
-			const item = options;
-			parsePath(this.path, item);
-		}
-
 		if (typeof this.initialize === 'function') {
 			this.initialize.apply(this, arguments);
 		}
+	}
+}
+
+export class Partial extends View {
+	constructor(options) {
+		super(options);
+		this._addToPartials();
+	}
+
+	_addToPartials() {
+		Fox.partials[this.name] = this.constructor;
 	}
 }
 
@@ -82,35 +93,56 @@ export class Compiler {
 
 	initialize() {}
 
+	_buildAll() {
+		Object.keys(this.routes).forEach(route => {
+			if (!route.match(/:/)) { // its not a collection
+				Fox.log(`building route "${route}"`);
+				Fox.build(`${this.routes[route]}.html`, this[this.routes[route]]());
+			} else {
+				const collection = inflection.pluralize(route.replace(/\/:/, ''));
+				this.collections[collection].items.forEach(item => {
+					Fox.log(`building ${inflection.singularize(collection)}: "${item.title}"`);
+					Fox.build(`${kebabCase(item.title)}.html`, this[this.routes[route]](item));
+				});
+			}
+		});
+	}
+
+	// _buildPartials(buildPath) {
+	// 	const name = path.parse(buildPath).name;
+	// 	Object.keys(Fox.partials).forEach(partial => {
+	// 		if (partial.toLowerCase() === name) {
+	// 			new Fox.partials[partial]();			}
+	// 	});
+	// }
+
+	_buildCollections(buildPath) {
+		const itemTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
+		const route = path.parse(buildPath).name;
+		Object.keys(this.collections).forEach(collection => {
+			const collectionPath = this.collections[collection].path.replace(/./, '');
+			if (buildPath.includes(collectionPath)) {
+				const name = inflection.singularize(collection);
+				const item = this.collections[collection].parser(buildPath);
+				Fox.log(`lol building ${name}: "${item[this.collections[collection].key]}"`)
+				Fox.build(`${kebabCase(item[this.collections[collection].key])}.html`, this[name](item));
+				Fox.build('index.html', this.index());
+			} else if (this[route]) { // if its not a collection, get the route from the filename
+				Fox.build(`${route}.html`, this[route]());
+			} else { // its probably a partial, build it and build everything
+				// this._buildPartials(buildPath);
+				this._buildAll();
+			}
+		});
+	}
+
 	compile(buildPath) {
 		const compilerPath = path.parse(__dirname).base;
 		const compilerDir = path.parse(__dirname).dir;
 		if (!buildPath || getDir(buildPath) === compilerPath) { // if the file changed in the root directory, build everything
-			Object.keys(this.routes).forEach(route => {
-				if (!route.match(/:/)) { // its not a collection
-					Fox.log(`building route "${route}"`);
-					Fox.build(`${this.routes[route]}.html`, this[this.routes[route]]());
-				} else {
-					const collection = inflection.pluralize(route.replace(/\/:/, ''));
-					this.collections[collection].items.forEach(item => {
-						Fox.log(`building ${inflection.singularize(collection)}: "${item.title}"`);
-						Fox.build(`${kebabCase(item.title)}.html`, this[this.routes[route]](item));
-					});
-				}
-			});
+			this._buildAll();
 		} else if (path.parse(buildPath).dir !== compilerDir) { // otherwise check if its a collection
-			const itemTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
-			Object.keys(this.collections).forEach(collection => {
-				const collectionPath = this.collections[collection].path.replace(/./, '');
-				if (buildPath.includes(collectionPath)) {
-					const item = this.collections[collection].parser(buildPath);
-					Fox.build(`${kebabCase(item[this.collections[collection].key])}.html`, this[inflection.singularize(collection)](item));
-					Fox.build('index.html', this.index());
-				} else if (this[route]) { // if its not a collection, get the route from the filename
-					const route = path.parse(buildPath).name;
-					Fox.build(`${route}.html`, this[route]());
-				}
-			});
+			this._buildCollections(buildPath);
 		}
 	}
 
@@ -159,6 +191,7 @@ const Fox = {
 	CollectionView,
 	templates: [],
 	views: [],
+	partials: {},
 	output: './dist',
 	content(...args) {
 		if (this.css.length === 0) {

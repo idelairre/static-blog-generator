@@ -1,36 +1,43 @@
 <footer class="site-footer">
 	<div class="wrap">
-		<h2 class="footer-heading">Contact</h2>
 		<div class="footer-col-1 column">
-			<div class="avatar">
-				<img width="50" height="50" src="/images/source_code-512.png"/>
-			</div>
-			<div class="info">
-				<ul>
-					<li><a href="mailto:{{ site.email }}">{{ site.email }}</a>
-					</li>
-				</ul>
-			</div>
+			<h2 class="footer-heading">Contact</h2>
+			<li>
+				<span class="fa fa-envelope-o"></span>
+				<a href="mailto:{{ site.email }}">
+					<span class="username">{{ site.email }}</span>
+				</a>
+			</li>
 		</div>
-		<!-- <div class="footer-col-2 column">
-			<ul>
-				{{#if site.github_username}}
-				<li>
-					<a href="https://github.com/{{ site.github_username }}">
-						<span class="icon github"><img src="/images/github-repo.png" alt="Github Repository">
-            </span>
-						<span class="username"> {{ site.github_username }}</span>
-					</a>
-				</li>{{/if}} {{#if site.twitter_username }}
-				<li>
-					<a href="https://twitter.com/{{ site.twitter_username }}">
-						<span class="icon-twitter"><img align="left" width=22 height=22 src="/images/twitter_circle_black-512.png" alt="twitter link"></span>
-						<span class="username"> {{ site.twitter_username }}</span>
-					</a>
-				</li>{{/if}}
-			</ul>
-		</div> -->
+		<div class="footer-col-2 column">
+			<h2 class="footer-heading">Social</h2>
+			{{#if site.twitter_username }}
+			<li>
+				<span class="fa fa-twitter"></span>
+				<a href="https://twitter.com/{{ site.twitter_username }}">
+					<span class="username">Twitter</span>
+				</a>
+			</li>
+			{{/if}}
+			{{#if site.github_username}}
+			<li>
+				<span class="fa fa-github"></span>
+				<a href="https://github.com/{{ site.github_username }}">
+					<span class="username">Github</span>
+				</a>
+			</li>
+			{{/if}}
+			{{#if site.tumblr_username }}
+			<li>
+				<span class="fa fa-tumblr"></span>
+				<a href="https://{{ site.twitter_username }}.tumblr.com/">
+					<span class="username">Tumblr</span>
+				</a>
+			</li>
+			{{/if}}
+		</div>
 		<div class="footer-col-3 column">
+			<h2 class="footer-heading">About</h2>
 			<p class="text">{{ site.description }}</p>
 		</div>
 	</div>

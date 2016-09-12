@@ -13,11 +13,6 @@ export const readFile = function(filepath) {
 	return fs.readFileSync(filepath, 'utf8');
 }
 
-export const getDir = filepath => {
-	const dirPath = path.parse(filepath).dir.split(path.sep);
-	return dirPath[dirPath.length - 1];
-}
-
 export const template = function(filepath) {
 	const name = path.parse(filepath).name;
 	const ext = path.parse(filepath).ext;

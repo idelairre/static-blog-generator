@@ -1,12 +1,13 @@
 import fs from 'fs';
 import gulp from 'gulp';
+import { kebabCase } from 'lodash';
 import { argv } from 'yargs';
 import config from '../test/config';
 
 const today = new Date();
 
 gulp.task('post', cb => {
-  const filename = `${today.getFullYear()}-${today.getMonth()}-${today.getDay()}-${argv.title}.markdown`;
+  const filename = `${today.getFullYear()}-${today.getMonth()}-${today.getDay()}-${kebabCase(argv.title)}.markdown`;
   const metadata =
 `---
 layout: post

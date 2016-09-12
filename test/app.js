@@ -4,16 +4,16 @@ import fs from 'fs-extra';
 import path from 'path';
 import Fox, { Compiler } from '../index';
 import Handlebars from 'handlebars';
-import Disqus from './disqus/disqus';
-import DisqusComments from './disqus/comments/disqusComments';
 import Post from './posts/post/post';
 import Posts from './posts/posts';
 import Main from './main/main';
-import { compile, getDir, getPost, readFile, parseMetaData, parsePost, parsePosts, template } from './helpers';
+import { compile, getPost, readFile, parseMetaData, parsePost, parsePosts } from './helpers';
 import site from './config';
-import './footer/footer';
-import './head/head';
-import './header/header';
+import Disqus from './disqus/disqus';
+import DisqusComments from './disqus/comments/disqusComments';
+import Footer from './footer/footer';
+import Head from './head/head';
+import Header from './header/header';
 
 Fox.configure({
 	debug: true,

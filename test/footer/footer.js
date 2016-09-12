@@ -1,8 +1,8 @@
-import Fox, { View } from '../../index';
+import Fox, { Partial } from '../../index';
 import Handlebars from 'handlebars';
-import path from 'path';
 
-const Footer = View.extend({
+const Footer = Partial.extend({
+  name: 'Footer',
   template: Handlebars.compile(Fox.loadTemplate('footer.html')),
   initialize() {
     Handlebars.registerPartial('footer', this.template);
