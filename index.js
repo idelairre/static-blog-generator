@@ -71,13 +71,11 @@ export class CollectionView extends View {
 	}
 }
 
-const optionalParam = /\((.*?)\)/g;
-const namedParam = /(\(\?)?:\w+/g;
-const splatParam = /\*\w+/g;
-const escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-const routeStripper = /^[#\/]|\s+$/g;
-const rootStripper = /^\/+|\/+$/g;
-const pathStripper = /#.*$/;
+export class RSS {
+	constructor(options) {
+		Fox.build(options.output, options.feed);
+	}
+}
 
 export class Compiler {
 	constructor(options) {
@@ -85,6 +83,7 @@ export class Compiler {
 			this.collections = options.collections;
 			this.router = options.routes;
 			this.assets = options.assets;
+			this.rss = options.rss;
 		}
 		this._copyAssets();
 		this.initialize.apply(this, arguments);
@@ -108,13 +107,23 @@ export class Compiler {
 		});
 	}
 
-	// _buildPartials(buildPath) {
-	// 	const name = path.parse(buildPath).name;
-	// 	Object.keys(Fox.partials).forEach(partial => {
-	// 		if (partial.toLowerCase() === name) {
-	// 			new Fox.partials[partial]();			}
-	// 	});
-	// }
+	_buildPartials(buildPath) {
+		if (!buildPath) {
+			Object.keys(Fox.partials).forEach(partial => new Fox.partials[partial]());
+		} else {
+			const name = path.parse(buildPath).name;
+			const base = path.parse(buildPath).base;
+			Object.keys(Fox.partials).forEach(partial => {
+				if (partial.toLowerCase() === name) {
+					Fox.log(`building partial: ${name}`);
+					if (path.parse(buildPath).ext === '.html') {
+						Fox.partials[partial].prototype.template = Fox.loadTemplate(base);
+					}
+					new Fox.partials[partial]();
+				}
+			});
+		}
+	}
 
 	_buildCollections(buildPath) {
 		const itemTitle = path.parse(buildPath).name.replace(/[-\d]/g, '').trim();
@@ -124,13 +133,13 @@ export class Compiler {
 			if (buildPath.includes(collectionPath)) {
 				const name = inflection.singularize(collection);
 				const item = this.collections[collection].parser(buildPath);
-				Fox.log(`lol building ${name}: "${item[this.collections[collection].key]}"`)
+				Fox.log(`building ${name}: "${item[this.collections[collection].key]}"`);
 				Fox.build(`${kebabCase(item[this.collections[collection].key])}.html`, this[name](item));
 				Fox.build('index.html', this.index());
 			} else if (this[route]) { // if its not a collection, get the route from the filename
 				Fox.build(`${route}.html`, this[route]());
 			} else { // its probably a partial, build it and build everything
-				// this._buildPartials(buildPath);
+				this._buildPartials(buildPath);
 				this._buildAll();
 			}
 		});
@@ -139,6 +148,7 @@ export class Compiler {
 	compile(buildPath) {
 		const compilerPath = path.parse(__dirname).base;
 		const compilerDir = path.parse(__dirname).dir;
+		this._buildPartials();
 		if (!buildPath || getDir(buildPath) === compilerPath) { // if the file changed in the root directory, build everything
 			this._buildAll();
 		} else if (path.parse(buildPath).dir !== compilerDir) { // otherwise check if its a collection
@@ -150,30 +160,8 @@ export class Compiler {
 		const globber = require('glob-fs')();
 		Object.keys(this.assets).forEach(asset => {
 			const files = globber.readdirSync(`${Fox.input}/**/*`, {}).filter(file => this.assets[asset].pattern.test(file));
-			files.forEach(file => {
-				fs.copySync(file, `${Fox.outputAbsolute}/${this.assets[asset].path}/${path.parse(file).base}`)
-			});
+			files.forEach(file => fs.copySync(file, `${Fox.outputAbsolute}/${this.assets[asset].path}/${path.parse(file).base}`));
 		});
-	}
-
-	_routeToRegExp(route) {
-		route = route.replace(escapeRegExp, '\\$&')
-								 .replace(optionalParam, '(?:$1)')
-								 .replace(namedParam, (match, optional) => {
-									 return optional ? match : '([^/?]+)';
-								 })
-								 .replace(splatParam, '([^?]*?)');
-		return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
-	}
-
-	_extractParameters(route, fragment) {
-		const params = route.exec(fragment).slice(1);
-		return params.map((param, i) => {
-			if (i === params.length) {
-				return param || null;
-			}
-			return param;
-		})
 	}
 }
 
@@ -190,7 +178,6 @@ const Fox = {
 	View,
 	CollectionView,
 	templates: [],
-	views: [],
 	partials: {},
 	output: './dist',
 	content(...args) {

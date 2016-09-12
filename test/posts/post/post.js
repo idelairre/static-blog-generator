@@ -1,7 +1,7 @@
 import path from 'path';
 import Handlebars from 'handlebars';
 import { parsePosts, readFile } from '../../helpers';
-import Fox, { CollectionView, View } from '../../../index';
+import Fox, { View } from '../../../index';
 
 Handlebars.registerPartial('postFooter', Fox.loadTemplate('postFooter.html'));
 

@@ -13,10 +13,8 @@ export const readFile = function(filepath) {
 	return fs.readFileSync(filepath, 'utf8');
 }
 
-export const template = function(filepath) {
-	const name = path.parse(filepath).name;
-	const ext = path.parse(filepath).ext;
-	const templ = ext.includes('html') ? readFile(filepath).replace(/---([\s\S]*)---/m, '') : compile(readFile(filepath).replace(/---([\s\S]*)---/m, ''));
+export const xml = function(filepath) {
+	const templ = readFile(filepath);
 	return Handlebars.compile(templ);
 }
 

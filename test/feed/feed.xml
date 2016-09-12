@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xml" href="{{ site.url }}/feed.xslt.xml"?>
+<feed xmlns="https://github.com/dylang/node-rss"{{#if site.lang}} xml:lang="{{ site.lang }}"{{/if}}>
+  <generator uri="https://github.com/idelairre/static-blog-generator" version="{{ site.version }}">Node RSS</generator>
+  <link href="{{ page.url }}" rel="self" type="application/atom+xml" />
+  <link href="{{ url_base }}/" rel="alternate" type="text/html" {{#if site.lang }}hreflang="{{ site.lang }}" {{/if}}/>
+  <updated>{{ site.time }}</updated>
+  <id>{{ site.url }}/</id>
+
+  {{#if site.title}}
+    <title type="html">{{ site.title }}</title>
+  {{else if site.name}}
+    <title type="html">{{ site.name }}</title>
+  {{/if}}
+
+  {{#if site.description}}
+    <subtitle>{{ site.description }}</subtitle>
+  {{/if}}
+
+  {{#if site.author}}
+    <author>
+        <name>{{ site.author }}</name>
+      {{#if site.email}}
+        <email>{{ site.email }}</email>
+      {{/if}}
+    </author>
+  {{/if}}
+
+  {{#each posts}}
+    <entry{{#if this.lang}} xml:lang="{{ this.lang }}"{{/if}}>
+      <title type="html">{{ this.title }}</title>
+      <link href="{{ this.url }}" rel="alternate" type="text/html" title="{{ this.title }}" />
+      <published>{{ this.date }}</published>
+      {{#if this.last_modified_at}}
+        <updated>{{ this.last_modified_at }}</updated>
+      {{else}}
+        <updated>{{ this.date }}</updated>
+      {{/if}}
+
+      <id>{{ this.id }}</id>
+      <content type="html" xml:base="{{ post.url }}">{{ this.content }}</content>
+
+      {{#if this.author}}
+        <author>
+            <name>{{ this.author }}</name>
+          {{#if this.author }}
+            <email>{{ site.email }}</email>
+          {{/if}}
+        </author>
+      {{/if}}
+
+      {{#if this.category}}
+        <category term="{{ this.category }}" />
+      {{/if}}
+
+      {{#each this.catagories as |tag|}}
+        <category term="{{ tag }}" />
+      {{/each}}
+
+      {{#if this.excerpt }}
+        <summary type="html">{{ this.excerpt }}</summary>
+      {{/if}}
+
+      {{#if this.image}}
+        <media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="{{ this.image }}" />
+      {{/if}}
+    </entry>
+  {{/each}}
+</feed>

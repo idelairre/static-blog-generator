@@ -1,19 +1,18 @@
 import { kebabCase } from 'lodash';
-import db from './db';
 import fs from 'fs-extra';
 import path from 'path';
-import Fox, { Compiler } from '../index';
+import Fox, { Compiler, RSS } from '../index';
 import Handlebars from 'handlebars';
 import Post from './posts/post/post';
 import Posts from './posts/posts';
 import Main from './main/main';
-import { compile, getPost, readFile, parseMetaData, parsePost, parsePosts } from './helpers';
+import { compile, getPost, readFile, parseMetaData, parsePost, parsePosts, xml } from './helpers';
 import site from './config';
-import Disqus from './disqus/disqus';
-import DisqusComments from './disqus/comments/disqusComments';
-import Footer from './footer/footer';
-import Head from './head/head';
-import Header from './header/header';
+import './disqus/disqus';
+import './disqus/comments/disqusComments';
+import './footer/footer';
+import './head/head';
+import './header/header';
 
 Fox.configure({
 	debug: true,
@@ -76,6 +75,11 @@ const compiler = Compiler.extend({
 		});
 		return new Main(content).compile();
 	}
+});
+
+const rss = new RSS({
+	output: 'feed.xml',
+	feed: xml(path.join(__dirname, './feed/feed.xml'))(Fox.content({ posts }))
 });
 
 const compilerInst = new compiler();

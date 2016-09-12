@@ -1,14 +1,11 @@
-import Fox, { View } from '../../../index';
+import Fox, { Partial } from '../../../index';
 import Handlebars from 'handlebars';
 
-const DisqusComments = View.extend({
-  template: Handlebars.compile(Fox.loadTemplate('disqusComments.html')),
+const DisqusComments = Partial.extend({
+  template: Fox.loadTemplate('disqusComments.html'),
   initialize() {
     Handlebars.registerPartial('disqusComments', this.template);
-  },
-  compile() {
-    return this.template();
   }
 });
 
-export default new DisqusComments().compile();
+export default new DisqusComments();

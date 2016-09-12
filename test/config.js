@@ -13,7 +13,8 @@ const site = {
 	pages: [
 		{ title: 'About', url: 'about'},
 		{ title: 'Portfolio', url: 'portfolio'},
-		{ title: 'Resume', url: 'resume'}
+		{ title: 'Resume', url: 'resume'},
+		{ title: 'RSS', url: 'feed.xml'}
 ]};
 
 export default site;
